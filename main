@@ -1,0 +1,68 @@
+import pygame
+import math
+
+pygame.init()
+
+#vytvoreni obrazovky
+width = 360
+height = 640
+
+screen = pygame.display.set_mode((width, height))
+
+class ball():
+    def __init__(self, positions, color, velocity, size):
+        self.pos = pygame.Vector2(positions)
+        self.prevpos = pygame.Vector2(positions)
+        self.color = color
+        self.velocity = pygame.Vector2(velocity)
+        self.size = size
+        self.gravity = 0.0005
+
+    def blit(self, screen):
+        pygame.draw.circle(screen, self.color, self.pos, self.size)
+
+    def move(self):
+        self.prevpos = self.pos
+        self.velocity.y += self.gravity
+
+        self.pos += self.velocity
+
+    def colide(self, positions, radius):
+        distance = self.distance(self.pos[0], self.pos[1], positions[0], positions[1])
+        if distance > radius - self.size:
+            self.pos = self.prevpos
+            dirToCenter = pygame.Vector2(self.pos.x - width/2,self.pos.y - height/2)
+            v = math.sqrt(self.velocity.x * self.velocity.x + self.velocity.y * self.velocity.y)
+            angleToCollisionPoint = math.atan2(-dirToCenter.y,dirToCenter.x)
+            oldAngle = math.atan2(-self.velocity.y,self.velocity.x)
+            newAngle = 2 * angleToCollisionPoint - oldAngle
+            self.velocity = pygame.Vector2(-v * math.cos(newAngle),v * math.sin(newAngle))
+
+    def distance(self, x1, y1, x2, y2):
+        return math.sqrt(math.pow(x2 - x1, 2) + math.pow(y2 - y1, 2))
+
+
+#barva v rgb, (red, green, blue)
+beckround_color = (15, 15, 15)
+
+ball1 = ball((width/2+5, height/2+20), (0, 255, 0), (0.2, 0.1), 20)
+
+#hranice
+radius = width/2-10
+color_circle = (0, 255, 0)
+
+#herni smycka
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT: #kliknuti na kriz
+            exit(0)
+
+    screen.fill(beckround_color)
+
+    ball1.blit(screen)
+    #ball1.move()
+    ball1.colide((width/2, height/2), radius)
+
+    pygame.draw.circle(screen, color_circle, (width/2, height/2), radius, 5)
+
+    pygame.display.flip()
